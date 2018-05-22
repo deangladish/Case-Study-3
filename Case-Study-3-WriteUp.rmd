@@ -32,3 +32,19 @@ pander(m, caption = "Important Coefficients of our Logistic Regression Model")
 
 The following set of scatterplots represent what is essentially the relationship between our estimated model and the data for the years 1980 and 2000.  
 
+_____
+
+\ \ \ \ \ \ \ Through exploratory data analysis of significance and association, we found that interaction variables gave us a closer fit to the data.  
+
+## Results:  
+
+\ \ \ \ \ \ \ 
+
+
+
+
+
+
+
+
+
