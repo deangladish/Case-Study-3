@@ -15,7 +15,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Data  
 
-\ \ \ \ \ \ \ The dataset that we analyzed consists of a binary indicator variable indicating Democratic Party preference as well as numerous other categorical variables corresponding to factors such as year, age, gender, race, region, income, unionized and educational status.  The three explanatory variables that we focus on are *gender*, *region*, and *union*.  
+\ \ \ \ \ \ \ The dataset that we analyzed consists of a binary indicator variable indicating Democratic Party preference as well as numerous other categorical variables corresponding to factors such as year, age, gender, race, region, income, unionized and educational status.  The three explanatory variables that we focus on are *gender*, *region*, and *union*.  We came up with the model  
+
+\begin{center} $\widehat Y_i \{dem|\} = \beta_0 + \beta_1 Gender$ \end{center}
+
 
 The following table gives our estimates of the important aspects (coefficients, etc.) of our model:  
 
