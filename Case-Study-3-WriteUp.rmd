@@ -28,10 +28,37 @@ colnames(m) <- c(" ", "Estimate", "Standard error", "z value", "P-value")
 pander(m, caption = "Important Coefficients of our Logistic Regression Model")
 ```
 
-The following set of plots represent what is essentially the relationship between our estimated model and the data for the years 1980 and 2000.  
+The following set of plots represent what is essentially the relationship between our binary model and the data for the years 1980 and 2000.  
 
-```{r, message = F, warning = F, echo = F}
+```{r, message = F, warning = F, echo = F, fig.height = 3, fig.width = 6}
+library(Sleuth3)
+library(dplyr)
 library(ggformula)
+library(pander)
+library(knitr)
+library(stargazer)
+library(car)
+library(pander)
+library(gridExtra)
+library(broom)
+library(ggthemes)
+library(MASS)
+library(leaps)
+library(GGally)
+nes <- read.csv("http://aloy.rbind.io/data/NES.csv")
+
+library(ggformula)
+library(car)
+glm.basic <- glm(dem ~ 1, data = nes, family = binomial)
+stp.inter.fwd <- stepAIC(glm.basic, scope = list(lower = ~1, upper = ~ year + region + union + income + educ + gender + race + age + I(age^2) +
+                                                   age * year + age * region + age * union + age * income + age * educ + age * gender + age * race),
+                         direction = "both", k = log(nrow(nes)), trace = 0)
+
+par(mfrow=c(1, 2))
+p2 <- crPlot(stp.inter.fwd, variable = "union")
+p1 <- crPlot(stp.inter.fwd, variable = "gender")
+
+
 ```
 
 

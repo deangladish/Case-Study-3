@@ -142,6 +142,23 @@ plot(glm.base$residuals)
 
 The residuals plot shows that our model generally fits the data.  
 
+```{r, message = F, warning = F}
+infIndexPlot(stp.inter.fwd, vars = c("hat", "cook"))
+anova(stp.inter.fwd, test = "Chisq")
+qqnorm(stp.inter.fwd$residuals)
+```
+
+Our p-values indicate that none of our coefficients are non-significant at the 0.05 level.  
+
+Despite the qqplot indicating a potential lack of normality, this is typical for multiple regression and our model does fit the data as indicated by the Loess smoother on our Deviance residuals plots.  
+
+```{r, message = F, warning = F}
+residualPlots(stp.inter.fwd, tests = false, type = "response")
+residualPlots(stp.inter.fwd, tests = false, type = "pearson")
+residualPlots(stp.inter.fwd, tests = false, type = "deviance")
+```
+
+
 
 
 
