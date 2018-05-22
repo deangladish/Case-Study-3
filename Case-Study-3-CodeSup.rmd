@@ -126,7 +126,15 @@ for (i in c(2, 3, 4, 5, 6)) {
 
 Based off these p-values, we can reject the null hypothesis that the coefficients are zero.  We can reject them for small p-values.  Specifically, unionyes and gendermale seem to have an undeniable impact at an alpha level of 0.05.  
 
+If we also want to look at the significance of the union variable, 
 
+```{r, message = F, warning = F}
+gender_only <- glm(dem ~ union, family = binomial, data = nes)
+anova(gender_only, glm.base, test = "Chisq")
+
+```
+
+shows that we can reject the notion that the other coefficients are not necessary.  
 
 
 
