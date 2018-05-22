@@ -28,16 +28,17 @@ library(GGally)
 library(effects)
 ```
 
-After loading the necessary libraries, we also need to load the dataset of interest:  
+After loading the necessary libraries, we first need to take a look at the data: 
 
 ```{r, message = F, warning = F}
 nes <- read.csv("http://aloy.rbind.io/data/NES.csv")
 head(nes)
 summary(nes)
+sum(is.na(nes))
 
 ```
 
-The following explains our derivation of a model:  
+After inspecting the data and getting a bit of an idea about what our data set looked like (which features have numeric values, which features are binary, ect) we began to select our model. The following explains our derivation of a model:  
 
 ```{r, message = F, warning = F}
 # The following code generates our baseline model for dem.  
@@ -47,36 +48,40 @@ summary(glm.base)
 # Regressing on a constant allows us to hold everything except for dem (party 
 # identification) constant.  
 glm.basic <- glm(dem ~ 1, data = nes, family = binomial)
+```
 
+After fitting a couple of initial models, used BIC to proform stepwise selection of a final model. We started off trying to find the best model using only the untransformed variables, but we also checked if adding square or interaction terms would produce a better model, but none of these more complex terms ended up in the final model. Interestingly, region was not included in our final model.
 
-stpFwd <- stepAIC(glm.basic, scope = list(lower = ~1, upper = ~ year + region + union + income + educ + gender + race + age), direction = "both")
+```{r, message = F, warning = F}
+stpFwd <- stepAIC(glm.basic, scope = list(lower = ~1, upper = ~ year + region + union + income + educ + gender + race + age), direction = "both", k = log(nrow(nes)))
+
 summary(stpFwd)
-stpBk <- stepAIC(glm.base, scope = list(lower = ~1, upper = ~ year + region + union + income + educ + gender + race + age), direction = "both")
+
+stpBk <- stepAIC(glm.base, scope = list(lower = ~1, upper = ~ year + region + union + income + educ + gender + race + age), direction = "both", k = log(nrow(nes)))
+
 summary(stpBk)
 
 glm.square <- glm(dem ~ year + region + union + income + educ + gender + race + age + 
                     I(year)^2 + I(region)^2 + I(union)^2 + I(income)^2 + I(educ)^2 + I(gender)^2 + I(race)^2 + I(age)^2, 
-                  data = nes, family = binomial)
+                            data = nes, family = binomial, k = log(nrow(nes)))
 
 glm.inter <- glm(dem ~ year + region + union + income + educ + gender + race + age + 
-                   age * year + age * region + age * union + age * income + age * educ + age * gender + age * race, data = nes, family = binomial)
+                   age * year + age * region + age * union + age * income + age * educ + age * gender + age * race, data = nes,                               family = binomial, k = log(nrow(nes)))
 summary(glm.inter)
+
 stp.inter <- stepAIC(glm.inter, scope = list(lower = ~1, upper = ~ year + region + union + income + educ + gender + race + age + 
-                                               age * year + age * region + age * union + age * income + age * educ + age * gender + age * race),
-                     direction = "both")
+                                               age * year + age * region + age * union + age * income + age * educ + age * gender +                                                   age * race), direction = "both", k = log(nrow(nes)))
 
 glm.inter <- glm(dem ~ year + region + union + income + educ + gender + race + age + 
-                  + age * union + age * income + age * educ + age * race, data = nes, family = binomial)
+                  + age * union + age * income + age * educ + age * race, data = nes, family = binomial, k = log(nrow(nes)))
 
 stp.inter <- stepAIC(glm.inter, scope = list(lower = ~1, upper = ~ year + region + union + income + educ + gender + race + age + 
-                                               age * year + age * region + age * union + age * income + age * educ + age * gender + age * race),
-                     direction = "both", k = log(nrow(nes)))
+                                               age * year + age * region + age * union + age * income + age * educ + age * gender +                                                    age * race), direction = "both", k = log(nrow(nes)))
 
 summary(stp.inter)
 
-stp.inter.fwd <- stepAIC(glm.basic, scope = list(lower = ~1, upper = ~ year + region + union + income + educ + gender + race + age + 
-                                                   age * year + age * region + age * union + age * income + age * educ + age * gender + age * race),
-                         direction = "both", k = log(nrow(nes)))
+stp.inter.fwd <- stepAIC(glm.basic, scope = list(lower = ~1, upper = ~ year + region + union + income + educ + gender + race + age +                                    age * year + age * region + age * union + age * income + age * educ + age * gender + age * race),
+                                         direction = "both", k = log(nrow(nes)))
 
 summary(stp.inter.fwd)
 
@@ -97,21 +102,22 @@ plot(allEffects(stp.inter.fwd), rows = 2, cols = 3, type = "link",
 
 ```
 
-As we can see from the plots, males have lower odds of supporting the Democratic party.  
+We can see from the plots that males, white people, older people, and the wealthy have lower odds of supporting the Democratic party.  
 
-Although people in North Carolina and the Southern region have lower odds of supporting the Democratic party, our model has been simplified such that these do not matter.  
-
-Those who are not in unions also have lower odds of supporting the Democratic party.  
+Union members have higher odds of supporting the Democratic party.  
 
 For further analysis of the probability that any given individual supports the Democrats, we can use the following code:  
 
 ```{r, message = F, warning = F}
 plot(Effect(c("gender", "union"), stp.inter.fwd), multiline = TRUE, type = "response", ylab = "Probability(Democrat)")
+plot(Effect(c("income", "gender"), stp.inter.fwd), multiline = TRUE, type = "response", ylab = "Probability(Democrat)")
+plot(Effect(c("race", "gender"), stp.inter.fwd), multiline = TRUE, type = "response", ylab = "Probability(Democrat)")
+plot(Effect(c("race", "age"), stp.inter.fwd), multiline = TRUE, type = "response", ylab = "Probability(Democrat)")
 ```
 
-This code allows us to more clearly see that Support of the Democratic Party tends to come from people who are in unions and who are female.  
+This graphs clarify the connection between gender, union membership, income, age, race, and support of the Democratic Party.
 
-More specifically, Unionization seems to have the largest effect on support, followed by Gender and then Region.  
+They show us that baed on our model having a higher income, being white, being male, being of older age, and not being a member of a union increase the chance that a person is not a democrat, and if a person is the oppisite of these things then they are likely a democrat.
 
 NOW, we need to assess the significance of these effects regardless of time.  
 
@@ -137,7 +143,7 @@ anova(gender_only, glm.base, test = "Chisq")
 shows that we can reject the notion that the other coefficients are not necessary.  
 
 ```{r, message = F, warning = F}
-plot(glm.base$residuals)
+plot(stp.inter.fwd$residuals)
 ```
 
 The residuals plot shows that our model generally fits the data.  
@@ -148,9 +154,9 @@ anova(stp.inter.fwd, test = "Chisq")
 qqnorm(stp.inter.fwd$residuals)
 ```
 
-Our p-values indicate that none of our coefficients are non-significant at the 0.05 level.  
+Our p-values indicate that all of our variables are significant.
 
-Despite the qqplot indicating a potential lack of normality, this is typical for multiple regression and our model does fit the data as indicated by the Loess smoother on our Deviance residuals plots.  
+Despite the qqplot indicating a potential lack of normality, this is typical for multiple regression and our model does fit the data as indicated by the Loess smoother on our Deviance residuals plots below:
 
 ```{r, message = F, warning = F}
 residualPlots(stp.inter.fwd, tests = false, type = "response")

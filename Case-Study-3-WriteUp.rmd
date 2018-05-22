@@ -11,11 +11,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction  
 
-\ \ \ \ \ \ \ In this modern world, party preference is typically thought to be associated with the demographics and geography of a populace.  It is of interest to politicians and the media alike to determine the extent of such correlation in order to understand which groups are most likely to vote for the party.  Our case study, which uses data collected from U.S. adults from the 1980 and 2000 elections respectively as part of the National Election Studies project, is an investigation into the matter that allows us to model party preference using the logistic regression model.  Specifically, we aim to address whether gender, regional, and union differences play a part in party preference over time.  
+\ \ \ \ \ \ \ Political party preference is typically thought to be associated with the demographics and geography of a populace.  It is of interest to politicians, political scientists and the media alike to determine the extent of such correlation in order to understand which groups are most likely to vote for the party.  Our case study, which uses data collected from U.S. adults from the 1980 and 2000 elections respectively as part of the National Election Studies project, is an investigation into the matter that allows us to model party preference using the logistic regression model.  Specifically, we aim to address whether gender, regional, and union differences play a part in party preference over time.  
 
 ## Data  
 
-\ \ \ \ \ \ \ The dataset that we analyzed consists of a binary indicator variable indicating Democratic Party preference as well as numerous other categorical variables corresponding to factors such as year, age, gender, race, region, income, unionized and educational status.  The three explanatory variables that we focus on are *gender*, *region*, and *union*.  
+\ \ \ \ \ \ \ The dataset that we analyzed consists of a binary indicator variable indicating Democratic Party preference as well as numerous other categorical variables corresponding to factors such as year, age, gender, race, region, income, unionized and educational status.  The explanatory variables that we focus on are *gender*, *race*, *income*, *age* and *union*.  
 
 
 The following table gives our estimates of the important aspects (coefficients, etc.) of our model:  
@@ -66,7 +66,7 @@ p1 <- crPlot(stp.inter.fwd, variable = "gender")
 
 ## Results:  
 
-\ \ \ \ \ \ \ Using the AIC criterion we obtained the following model:  
+\ \ \ \ \ \ \ Using the BIC criterion we obtained the following model:  
 
 \begin{center} $\widehat Y_i \{dem\} = \beta_0 + \beta_1 raceother + \beta_2 racewhite + \beta_3 unionyes + \beta_4 incomemiddle \ 1/3 + \beta_5 incomeupper \ 1/3 + \beta_6 age + \beta_7 gendermale$ \end{center}
 
@@ -75,6 +75,7 @@ The model shown above can be interpreted as follows:
 
 ## Discussion:  
 
+\ \ \ \ \ \ \ 
 
 
 
