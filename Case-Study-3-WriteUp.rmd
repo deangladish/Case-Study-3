@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction  
 
-\ \ \ \ \ \ \ Political party preference is typically thought to be associated with the demographics and geography of a populace.  It is of interest to politicians, political scientists and the media alike to determine the extent of such correlation in order to understand which groups are most likely to vote for the party.  Our case study, which uses data collected from U.S. adults from the 1980 and 2000 elections respectively as part of the National Election Studies project, is an investigation into the matter that allows us to model party preference using the logistic regression model.  Specifically, we aim to address whether gender, regional, and union differences play a part in party preference over time.  
+\ \ \ \ \ \ \ Political party preference is typically thought to be associated with the demographics and geography of a populace.  It is of interest to politicians, political scientists and the media alike to determine the extent of such correlation in order to understand which groups are most likely to vote for the party.  Our case study, which uses data collected from U.S. adults from the 1980 and 2000 elections respectively as part of the National Election Studies project, is an investigation into the matter that allows us to model party preference using the logistic regression model.  Specifically, we aim to address whether gender, regional, income, race, age, level of education, and union differences play a part in party preference over time.  
 
 ## Data  
 
@@ -54,15 +54,18 @@ stp.inter.fwd <- stepAIC(glm.basic, scope = list(lower = ~1, upper = ~ year + re
                                                    age * year + age * region + age * union + age * income + age * educ + age * gender + age * race),
                          direction = "both", k = log(nrow(nes)), trace = 0)
 
-par(mfrow=c(1, 2))
+par(mfrow=c(1, 4))
 p2 <- crPlot(stp.inter.fwd, variable = "union")
 p1 <- crPlot(stp.inter.fwd, variable = "gender")
+p1 <- crPlot(stp.inter.fwd, variable = "race")
+p1 <- crPlot(stp.inter.fwd, variable = "age")
+p1 <- crPlot(stp.inter.fwd, variable = "income")
 
 
 ```
 
 
-\ \ \ \ \ \ \ Through exploratory data analysis of significance and association, we found that interaction variables gave us a closer fit to the data.  
+\ \ \ \ \ \ \ Through exploratory data analysis of significance and association, we found that interaction variables did not give us a closer fit to the data.  
 
 ## Results:  
 
@@ -75,8 +78,8 @@ The model shown above can be interpreted as follows:
 
 ## Discussion:  
 
-\ \ \ \ \ \ \ 
-
+\ \ \ \ \ \ \ Out of the eight features that were contained in the original datset we ended up using only five to predict party status in our model, and this model does not include any interaction, or otherwise transformed variables. While, the simplicity of the model may suggest robust-ness it may may be an over simplification of the the interaction that we are ultimately trying to model. That being said (and Occam's Razor suggests) that this simplification may infact be a good thing, given that we are trying to create a model that works under a very broad range of circumstances. This may leave our model vunerable to mis-classifying very specific groups of people, but if we wish to provide an accurate model for each and every group of people we may need the help of some political scientists that have understanding of those specific groups. Overall our model seems to pedict party affiliation fairly well without completely violating its underlying assumptions or completely overfitting itself to the data.
+\ \ \ \ \ \ \ In the future, however we would suggest that another sample of the population be taken. Given that each of the data points we used in this analysis were collected in either 1980 or 2000 there may be some underlying time related pattern that is subtly influencing our data. Economies, societies, and political parties all undergo transformations over time, and we may be picking up on some of those changes in our model. Alternatively, it is possible that changes have occured since 1980 & 2000 that may render this model less effective.
 
 
 
