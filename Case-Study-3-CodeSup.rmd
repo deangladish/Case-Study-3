@@ -9,22 +9,139 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+```{r, message = F, warning = F}
+library(Sleuth3)
+library(dplyr)
+library(ggformula)
+library(pander)
+library(knitr)
+library(stargazer)
+library(car)
+library(pander)
+library(gridExtra)
+library(broom)
+library(ggthemes)
+library(MASS)
+library(leaps)
+library(GGally)
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+library(effects)
 ```
 
-## Including Plots
+After loading the necessary libraries, we also need to load the dataset of interest:  
 
-You can also embed plots, for example:
+```{r, message = F, warning = F}
+nes <- read.csv("http://aloy.rbind.io/data/NES.csv")
+head(nes)
+summary(nes)
 
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+The following explains our derivation of a model:  
+
+```{r, message = F, warning = F}
+# The following code generates our baseline model for dem.  
+glm.base <- glm(dem ~ gender + region + union + income + educ + year + race + age, data = nes, family = binomial)
+summary(glm.base)
+
+# Regressing on a constant allows us to hold everything except for dem (party 
+# identification) constant.  
+glm.basic <- glm(dem ~ 1, data = nes, family = binomial)
+
+
+stpFwd <- stepAIC(glm.basic, scope = list(lower = ~1, upper = ~ year + region + union + income + educ + gender + race + age), direction = "both")
+summary(stpFwd)
+stpBk <- stepAIC(glm.base, scope = list(lower = ~1, upper = ~ year + region + union + income + educ + gender + race + age), direction = "both")
+summary(stpBk)
+
+glm.square <- glm(dem ~ year + region + union + income + educ + gender + race + age + 
+                    I(year)^2 + I(region)^2 + I(union)^2 + I(income)^2 + I(educ)^2 + I(gender)^2 + I(race)^2 + I(age)^2, 
+                  data = nes, family = binomial)
+
+glm.inter <- glm(dem ~ year + region + union + income + educ + gender + race + age + 
+                   age * year + age * region + age * union + age * income + age * educ + age * gender + age * race, data = nes, family = binomial)
+summary(glm.inter)
+stp.inter <- stepAIC(glm.inter, scope = list(lower = ~1, upper = ~ year + region + union + income + educ + gender + race + age + 
+                                               age * year + age * region + age * union + age * income + age * educ + age * gender + age * race),
+                     direction = "both")
+
+glm.inter <- glm(dem ~ year + region + union + income + educ + gender + race + age + 
+                  + age * union + age * income + age * educ + age * race, data = nes, family = binomial)
+
+stp.inter <- stepAIC(glm.inter, scope = list(lower = ~1, upper = ~ year + region + union + income + educ + gender + race + age + 
+                                               age * year + age * region + age * union + age * income + age * educ + age * gender + age * race),
+                     direction = "both", k = log(nrow(nes)))
+
+summary(stp.inter)
+
+stp.inter.fwd <- stepAIC(glm.basic, scope = list(lower = ~1, upper = ~ year + region + union + income + educ + gender + race + age + 
+                                                   age * year + age * region + age * union + age * income + age * educ + age * gender + age * race),
+                         direction = "both", k = log(nrow(nes)))
+
+summary(stp.inter.fwd)
+
+```
+
+
+
+```{r, message = F, warning = F}
+
+# In order to do some preliminary investigation into whether there are 
+# associations between gender and party preference, 
+# between region and party preference, 
+# and between unionized status and party preference, 
+# I have created some plots of gender, region, and union.  
+
+plot(allEffects(stp.inter.fwd), rows = 2, cols = 3, type = "link", 
+     ylab = "Log(Odds of Democratic Party Support)")
+
+```
+
+As we can see from the plots, males have lower odds of supporting the Democratic party.  
+
+Although people in North Carolina and the Southern region have lower odds of supporting the Democratic party, our model has been simplified such that these do not matter.  
+
+Those who are not in unions also have lower odds of supporting the Democratic party.  
+
+For further analysis of the probability that any given individual supports the Democrats, we can use the following code:  
+
+```{r, message = F, warning = F}
+plot(Effect(c("gender", "union"), stp.inter.fwd), multiline = TRUE, type = "response", ylab = "Probability(Democrat)")
+```
+
+This code allows us to more clearly see that Support of the Democratic Party tends to come from people who are in unions and who are female.  
+
+More specifically, Unionization seems to have the largest effect on support, followed by Gender and then Region.  
+
+NOW, we need to assess the significance of these effects regardless of time.  
+
+```{r, message = F, warning = F}
+for (i in c(2, 3, 4, 5, 6, 7, 8)) {
+  coefficient <- coef(stp.inter.fwd)[i]
+  standardError <- sqrt(vcov(stp.inter.fwd)[i,i])
+  waldStat <- (coefficient / standardError)^2
+  print(1-pchisq(waldStat, df = 1)) 
+}
+```
+
+Based off these p-values, we can reject the null hypothesis that the coefficients are zero.  We can reject them for small p-values.  Specifically, unionyes and gendermale seem to have an undeniable impact at an alpha level of 0.05.  
+
+If we also want to look at the significance of the union variable, 
+
+```{r, message = F, warning = F}
+gender_only <- glm(dem ~ union, family = binomial, data = nes)
+anova(gender_only, glm.base, test = "Chisq")
+
+```
+
+shows that we can reject the notion that the other coefficients are not necessary.  
+
+```{r, message = F, warning = F}
+plot(glm.base$residuals)
+```
+
+The residuals plot shows that our model generally fits the data.  
+
+
+
+
