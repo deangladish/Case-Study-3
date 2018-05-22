@@ -116,12 +116,16 @@ More specifically, Unionization seems to have the largest effect on support, fol
 NOW, we need to assess the significance of these effects regardless of time.  
 
 ```{r, message = F, warning = F}
-coefficient <- coef(logRegressionMod)[3]
-standardError <- sqrt(vcov(logRegressionMod)[3,3])
-waldStat <- (coefficient / standardError)^2
-waldStat
-1-pchisq(waldStat, df = 1)  
+for (i in c(2, 3, 4, 5, 6)) {
+  coefficient <- coef(glm.base)[i]
+  standardError <- sqrt(vcov(glm.base)[i,i])
+  waldStat <- (coefficient / standardError)^2
+  print(1-pchisq(waldStat, df = 1)) 
+}
 ```
+
+Based off these p-values, we can reject the null hypothesis that the coefficients are zero.  We can reject them for small p-values.  Specifically, unionyes and gendermale seem to have an undeniable impact at an alpha level of 0.05.  
+
 
 
 
