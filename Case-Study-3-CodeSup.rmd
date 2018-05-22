@@ -92,33 +92,33 @@ summary(stp.inter.fwd)
 # and between unionized status and party preference, 
 # I have created some plots of gender, region, and union.  
 
-plot(allEffects(glm.base), rows = 1, cols = 3, type = "link", 
+plot(allEffects(stp.inter.fwd), rows = 2, cols = 3, type = "link", 
      ylab = "Log(Odds of Democratic Party Support)")
 
 ```
 
 As we can see from the plots, males have lower odds of supporting the Democratic party.  
 
-Additionally, people in North Carolina and the Southern region have lower odds of supporting the Democratic party.  
+Although people in North Carolina and the Southern region have lower odds of supporting the Democratic party, our model has been simplified such that these do not matter.  
 
 Those who are not in unions also have lower odds of supporting the Democratic party.  
 
 For further analysis of the probability that any given individual supports the Democrats, we can use the following code:  
 
 ```{r, message = F, warning = F}
-plot(Effect(c("gender", "region", "union"), glm.base), multiline = TRUE, type = "response", ylab = "Probability(Democrat)")
+plot(Effect(c("gender", "union"), stp.inter.fwd), multiline = TRUE, type = "response", ylab = "Probability(Democrat)")
 ```
 
-This code allows us to more clearly see that Support of the Democratic Party tends to come from people who are in regions NE and W, who are in unions, and who are female.  
+This code allows us to more clearly see that Support of the Democratic Party tends to come from people who are in unions and who are female.  
 
 More specifically, Unionization seems to have the largest effect on support, followed by Gender and then Region.  
 
 NOW, we need to assess the significance of these effects regardless of time.  
 
 ```{r, message = F, warning = F}
-for (i in c(2, 3, 4, 5, 6)) {
-  coefficient <- coef(glm.base)[i]
-  standardError <- sqrt(vcov(glm.base)[i,i])
+for (i in c(2, 3, 4, 5, 6, 7, 8)) {
+  coefficient <- coef(stp.inter.fwd)[i]
+  standardError <- sqrt(vcov(stp.inter.fwd)[i,i])
   waldStat <- (coefficient / standardError)^2
   print(1-pchisq(waldStat, df = 1)) 
 }
@@ -136,9 +136,11 @@ anova(gender_only, glm.base, test = "Chisq")
 
 shows that we can reject the notion that the other coefficients are not necessary.  
 
+```{r, message = F, warning = F}
+plot(glm.base$residuals)
+```
 
-
-
+The residuals plot shows that our model generally fits the data.  
 
 
 
